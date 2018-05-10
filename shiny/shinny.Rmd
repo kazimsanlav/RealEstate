@@ -1,0 +1,105 @@
+---
+title: '490'
+author: "kazim"
+date: "April 14, 2018"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+fileName = 'C:/Users/kazIm/Desktop/projects/IE490/input/tubitak_data2_processesed2_outlier.csv'
+df = pd.read_csv(fileName,  sep = ',')
+
+from sklearn.ensemble import RandomForestRegressor
+
+X = df.drop('adil_piyasa_degeri_yasal_durum',axis=1)
+y = df['adil_piyasa_degeri_yasal_durum']
+
+RANDOM_STATE = 42
+
+regr = RandomForestRegressor(bootstrap=True,
+                             oob_score=True,
+                             max_depth= 10,
+                             max_features= 5,
+                             min_samples_leaf= 1,
+                             min_samples_split= 4,
+                             n_estimators= 400,
+                             random_state = RANDOM_STATE)
+rf = regr.fit(X, y)
+preds = rf.oob_prediction_
+    
+df['prediction'] = preds
+df['error'] = np.abs(df['adil_piyasa_degeri_yasal_durum']-df['prediction'])/df['adil_piyasa_degeri_yasal_durum']
+
+oob_error = 1 - rf.oob_score_
+
+print("oob error: %0.2f" % oob_error)
+print("R^2: %0.2f" % rf.score(X, y, sample_weight=None))# print(":",regr.oob_score_)# print(":",regr.oob_score_)
+print("20% error quantile: {0:.3f}".format(((df[df.error<=0.2].shape[0])/df.shape[0]))) 
+
+print(rf.predict(X.head(1)),y.head(1))
+```
+
+```{r}
+a=1:5
+
+```
+
+
+This R Markdown document is made interactive using Shiny. Unlike the more traditional workflow of creating static reports, you can now create documents that allow your readers to change the assumptions underlying your analysis and see the results immediately. 
+
+To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authoring_shiny.html).
+
+## Inputs and Outputs
+
+You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
+
+```{r eruptions, echo=FALSE}
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)", main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
+```
+
+## Embedded Application
+
+It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
+
+```{r tabsets, echo=FALSE}
+shinyAppDir(
+  system.file("examples/06_tabsets", package = "shiny"),
+  options = list(
+    width = "100%", height = 550
+  )
+)
+```
+
+Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
+
+You can also use the `shinyApp` function to define an application inline rather then in an external directory.
+
+In all of R code chunks above the `echo = FALSE` attribute is used. This is to prevent the R code within the chunk from rendering in the document alongside the Shiny components.
+
+
+
