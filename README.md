@@ -1,4 +1,6 @@
 # RealEstate
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2528655.svg)](https://doi.org/10.5281/zenodo.2528655)
+
 
 ## Abstract
 The aim of our project is to create a system for predicting real estate prices for use
